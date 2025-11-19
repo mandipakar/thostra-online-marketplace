@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>One‑Stop Marketplace</title>
+  <style>
+    :root {
+      --brand-bg: #0d47a1;
+      --brand-text: #ffffff;
+      --brand-accent: #1976d2;
+      --brand-light: #e3f2fd;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+    }
+
+    header {
+      background: var(--brand-bg);
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.4rem;
+      font-weight: bold;
+    }
+
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      background: var(--brand-accent);
+      padding: 0.7rem;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      padding: 0.3rem 0.7rem;
+    }
+
+    nav a.active {
+      background: var(--brand-light);
+      color: black;
+      border-radius: 5px;
+    }
+
+    .page {
+      display: none;
+      padding: 1rem;
+    }
+
+    .visible {
+      display: block;
+    }
+
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .product-card {
+      background: white;
+      padding: 1rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    form input, form textarea, form button {
+      width: 100%;
+      padding: 0.6rem;
+      margin: 0.5rem 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    form button {
+      background: var(--brand-accent);
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    @media (max-width: 600px) {
+      header { font-size: 1.2rem; }
+      nav { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+
+<body>
+  <header>One‑Stop Marketplace</header>
+
+  <nav>
+    <a href="#home" class="nav-link">Home</a>
+    <a href="#products" class="nav-link">Products</a>
+    <a href="#vendors" class="nav-link">Vendors</a>
+    <a href="#signup" class="nav-link">Vendor Sign‑Up</a>
+    <a href="#about" class="nav-link">About</a>
+  </nav>
+
+  <!-- HOME PAGE -->
+  <div id="home" class="page visible">
+    <h2>Welcome to the One‑Stop Marketplace</h2>
+    <p>Buy and sell anything — electronics, services, gadgets, and more.</p>
+  </div>
+
+  <!-- PRODUCTS PAGE -->
+  <div id="products" class="page">
+    <h2>Products</h2>
+    <div class="products-grid" id="products-list"></div>
+  </div>
+
+  <!-- VENDORS PAGE -->
+  <div id="vendors" class="page">
+    <h2>Registered Vendors</h2>
+    <ul id="vendor-list"></ul>
+  </div>
+
+  <!-- SIGNUP PAGE -->
+  <div id="signup" class="page">
+    <h2>Vendor Sign‑Up</h2>
+    <form id="vendorForm">
+      <input type="text" id="vname" placeholder="Vendor Name" required />
+      <input type="text" id="vphone" placeholder="Phone Number" required />
+      <input type="text" id="vcategory" placeholder="Category (e.g. IT, Clothing)" required />
+      <textarea id="vdesc" placeholder="Business Description"></textarea>
+      <button type="submit">Register Vendor</button>
+    </form>
+  </div>
+
+  <!-- ABOUT PAGE -->
+  <div id="about" class="page">
+    <h2>About This Marketplace</h2>
+    <p>This marketplace helps vendors sell any product or service easily using a simple, free website hosted on GitHub Pages.</p>
+  </div>
+
+  <!-- EMBEDDED JSON FOR PRODUCTS -->
+  <script id="products-data" type="application/json">
+    [
+      { "name": "Lenovo Laptop", "price": "$450", "description": "i5, 8GB RAM, 256GB SSD" },
+      { "name": "iPhone 12", "price": "$700", "description": "64GB, Very clean" },
+      { "name": "HP Desktop", "price": "$300", "description": "Great for office work" }
+    ]
+  </script>
+
+  <script>
+    // PAGE SWITCHING
+    const pages = document.querySelectorAll('.page');
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    function showPage(pageId) {
+      pages.forEach(p => p.classList.remove('visible'));
+      document.getElementById(pageId)?.classList.add('visible');
+
+      navLinks.forEach(l => l.classList.remove('active'));
+      const active = [...navLinks].find(l => l.getAttribute('href') === `#${pageId}`);
+      if (active) active.classList.add('active');
+    }
+
+    window.addEventListener('hashchange', () => {
+      const page = location.hash.replace('#', '') || 'home';
+      showPage(page);
+    });
+
+    showPage(location.hash.replace('#', '') || 'home');
+
+    // LOAD PRODUCTS
+    const products = JSON.parse(document.getElementById('products-data').textContent);
+    const productList = document.getElementById('products-list');
+
+    products.forEach(p => {
+      const card = document.createElement('div');
+      card.className = 'product-card';
+      card.innerHTML = `<h3>${p.name}</h3><p>${p.description}</p><strong>${p.price}</strong>`;
+      productList.appendChild(card);
+    });
+
+    // VENDOR SIGNUP
+    const vendorForm = document.getElementById('vendorForm');
+    const vendorList = document.getElementById('vendor-list');
+    const savedVendors = JSON.parse(localStorage.getItem('vendors') || '[]');
+
+    function renderVendors() {
+      vendorList.innerHTML = '';
+      savedVendors.forEach(v => {
+        const li = document.createElement('li');
+        li.textContent = `${v.name} — ${v.category} (${v.phone})`;
+        vendorList.appendChild(li);
+      });
+    }
+
+    renderVendors();
+
+    vendorForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const vendor = {
+        name: vname.value,
+        phone: vphone.value,
+        category: vcategory.value,
+        desc: vdesc.value
+      };
+
+      savedVendors.push(vendor);
+      localStorage.setItem('vendors', JSON.stringify(savedVendors));
+
+      vendorForm.reset();
+      renderVendors();
+      alert('Vendor registered successfully!');
+    });
+
+    // BRAND CUSTOMIZER (CALL FROM CONSOLE)
+    window.applyBrand = function(bg, accent) {
+      document.documentElement.style.setProperty('--brand-bg', bg);
+      document.documentElement.style.setProperty('--brand-accent', accent);
+    }
+  </script>
+</body>
+</html>
